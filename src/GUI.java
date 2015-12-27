@@ -1,53 +1,37 @@
+import com.sun.org.apache.xml.internal.dtm.DTM;
+
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-//import java.awt.Dimension;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+
 
 import static javax.swing.GroupLayout.*;
 
 
 public class GUI extends JFrame {
 
-    DatabaseFleats DatabaseFleats= new DatabaseFleats();
-
-    private byte tablestatus;
-
-    private JLabel LoadAmountLabel;
     private JLabel SearchLabel;
-    private JLabel NameLabel;
 
-    private JTextField LoadAmountTextField;
-    private JTextField StorageSearchTextField;
-    private JTextField SearchTextField;
+    private JTextField SearchField;
 
-    private JButton LoadButton;
-    private JButton StorageSearchButton;
     private JButton SearchButton;
-    private JButton SellButton;
 
+    private JMenuItem EditItem;
+    private JMenuItem FileItem;
     private JMenuItem AddItem;
     private JMenuItem DatabaseItem;
     private JMenuItem ExitItem;
-
-    private JTextField AmountTextField;
-   // private JMenuItem CatalogueItem;
     private JMenuItem DeleteItem;
-   // private JMenu OpenMenu;
-    //private JMenu DatabaseMenu;
-    private JMenuItem EditItem;
-    private JMenuItem CompaniesItem;
-    private JMenuItem FormsItem;
-
 
     private JComboBox SearchComboBox;
 
-
-
     private JMenu EditMenu;
     private JMenu FileMenu;
-   //private JMenuItem StorageItem;
+
     private JMenuBar jMenuBar;
 
     private JScrollPane jScrollPane;
@@ -58,83 +42,68 @@ public class GUI extends JFrame {
     public GUI() {
         initComponents();
     }
-    private void initComponents() {
-        //dbm = new DBManager();
 
-        StorageSearchTextField = new JTextField();
-        StorageSearchButton = new JButton();
-        LoadAmountLabel = new JLabel();
-        LoadAmountTextField = new JTextField();
-        LoadButton = new JButton();
-        NameLabel = new JLabel();
+    ArrayList<Fleats> databasefleats;
+
+
+
+    private void initComponents() {
+
         jScrollPane = new JScrollPane();
         table = new JTable();
         panel = new JPanel();
         SearchComboBox = new JComboBox();
-        SearchTextField = new JTextField();
+        SearchField = new JTextField();
         SearchButton = new JButton();
         SearchLabel = new JLabel();
-        AmountTextField = new JTextField();
-        SellButton = new JButton();
 
         jMenuBar = new JMenuBar();
 
         FileMenu = new JMenu();
         DatabaseItem= new JMenuItem();
         ExitItem = new JMenuItem();
-        FormsItem = new JMenuItem();
-
-        //StorageItem = new JMenuItem();
 
         EditMenu = new JMenu();
         AddItem = new JMenuItem();
         EditItem = new JMenuItem();
         DeleteItem = new JMenuItem();
 
+        ArrayList<Fleats> databasefleats = new ArrayList<Fleats>();
+
         setTitle("Расселение квартир");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        try {
+            databasefleats=DatabaseFleats.read("doc.txt");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
 
-        //String[] columnNames = {"Район","Улица","Дом","Квартира","ФИО проживающего","ФИО проживающего","ФИО проживающего","ФИО проживающего","ФИО проживающего"};
+        }
 
+        DefaultTableModel model = new DefaultTableModel();
 
+        table = new JTable(model);
+//        System.out.println(databasefleats.size());
 
-
-
-       // JTable table1 = new JTable(data, columnNames);
-
-       // JScrollPane scrollPane = new JScrollPane(table);
-
-
-        //String sql="Расселение квартир";
-
-
-        Object[] columnNames = {"Район","Улица","Дом","Квартира","ФИО проживающего","ФИО проживающего","ФИО проживающего","ФИО проживающего","ФИО проживающего"};
-
-        //Object[][] data = DatabaseFleats.getData();
-
-        Object[][] data = {
-                {"Район","Улица","Дом","Квартира","ФИО проживающего","ФИО проживающего","ФИО проживающего","ФИО проживающего","ФИО проживающего"},
-                {"Район","Улица","Дом","Квартира","ФИО проживающего","ФИО проживающего","ФИО проживающего","ФИО проживающего","ФИО проживающего"},
-
-        };
-
-        DefaultTableModel DatabaseFleats = new DefaultTableModel();
-            for(int i = 0; i<9;i++){
-                DatabaseFleats.addColumn(columnNames[i]);
-            }
-            /**for(int i = 0;i<DatabaseFleats.getRows();i++){
-                Object[] row = new Object[DatabaseFleats.getColumns()];
-                for(int j = 0;j<DatabaseFleats.getColumns();j++){
-                    row[j] = data[i][j];
-                }
-                DatabaseFleats.addRow(row);
-            }/*/
-
-            table.setModel(DatabaseFleats);
+        model.addColumn("Район");
+        model.addColumn("Адресс");
+        model.addColumn("ФИО проживающего");
+        model.addColumn("ФИО проживающего");
+        model.addColumn("ФИО проживающего");
+        model.addColumn("ФИО проживающего");
+        model.addColumn("ФИО проживающего");
 
 
-        setCataloguePanel();
+        for (int c=0; c<databasefleats.size(); c++){
+            model.addRow(new Object[]{databasefleats.get(c).getDistrict(),databasefleats.get(c).getAdres(),databasefleats.get(c).getName1(),databasefleats.get(c).getName2(),databasefleats.get(c).getName3(),databasefleats.get(c).getName4(),databasefleats.get(c).getName5()});
+        }
+
+
+        add(new JScrollPane(table));
+        table.getSelectionModel().addListSelectionListener(table);
+        table.getColumnModel().addColumnModelListener(table);
+
+        SearchPanel();
         jScrollPane.setViewportView(table);
 
 
@@ -142,23 +111,28 @@ public class GUI extends JFrame {
 
         DatabaseItem.setText("База данных");
 
+        final ArrayList<Fleats> finalDatabasefleats4 = databasefleats;
         DatabaseItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-
+                DefaultTableModel model = new DefaultTableModel();
+                for (int c=0; c< finalDatabasefleats4.size(); c++){
+                    model.addRow(new Object[]{finalDatabasefleats4.get(c).getDistrict(), finalDatabasefleats4.get(c).getAdres(), finalDatabasefleats4.get(c).getName1(), finalDatabasefleats4.get(c).getName2(), finalDatabasefleats4.get(c).getName3(), finalDatabasefleats4.get(c).getName4(), finalDatabasefleats4.get(c).getName5()});
+                }
             }
         });
 
         FileMenu.add(DatabaseItem);
 
         ExitItem.setText("Выход");
+        final ArrayList<Fleats> finalDatabasefleats3 = databasefleats;
         ExitItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
+                DatabaseFleats.write("doc.txt",finalDatabasefleats3);
                 ExitItemActionPerformed(evt);
             }
         });
 
         FileMenu.add(ExitItem);
-
 
         jMenuBar.add(FileMenu);
         EditMenu.add(AddItem);
@@ -166,59 +140,45 @@ public class GUI extends JFrame {
         EditMenu.setText("Редактировать");
 
         AddItem.setText("Добавить");
+
+        final ArrayList<Fleats> finalDatabasefleats = databasefleats;
+        final ArrayList<Fleats> finalDatabasefleats1 = databasefleats;
         AddItem.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 JFrame AddFrame =  new JFrame();
                 AddFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                AddFrame.setSize(300,300);
+                AddFrame.setSize(300,250);
                 AddFrame.setLayout(new BorderLayout());
-                JPanel FillPanel = new JPanel(new GridLayout(9,2));
+                JPanel FillPanel = new JPanel(new GridLayout(7,2));
                 JLabel DistrictTextLabel = new JLabel("Район");
-                JLabel StreetTextLabel = new JLabel("Улица");
-                JLabel HomeTextLabel = new JLabel("Дом");
-                JLabel FleatTextLabel = new JLabel("Квартира");
+                JLabel AdressTextLabel = new JLabel("Адресс");
                 JLabel Name1TextLabel = new JLabel("ФИО проживающего");
                 JLabel Name2TextLabel = new JLabel("ФИО проживающего");
                 JLabel Name3TextLabel = new JLabel("ФИО проживающего");
                 JLabel Name4TextLabel = new JLabel("ФИО проживающего");
                 JLabel Name5TextLabel = new JLabel("ФИО проживающего");
 
-
-                //JTextField DistrictField = new JTextField(15);
-                JTextField StreetField = new JTextField(15);
-                JTextField HomeField = new JTextField(15);
-                JTextField FleatField = new JTextField(15);
-                JTextField Name1Field = new JTextField(15);
-                JTextField Name2Field = new JTextField(15);
-                JTextField Name3Field = new JTextField(15);
-                JTextField Name4Field = new JTextField(15);
-                JTextField Name5Field = new JTextField(15);
-                JComboBox DistrictBox = new JComboBox();
+                final JTextField AdressField = new JTextField(20);
+                final JTextField Name1Field = new JTextField(20);
+                final JTextField Name2Field = new JTextField(20);
+                final JTextField Name3Field = new JTextField(20);
+                final JTextField Name4Field = new JTextField(20);
+                final JTextField Name5Field = new JTextField(20);
+                final JComboBox DistrictBox = new JComboBox();
                 DistrictBox.setEditable(true);
 
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-
-
+                DistrictBox.addItem("Ленинский");
+                DistrictBox.addItem("Дзержинский");
+                DistrictBox.addItem("Фрунзенский");
+                DistrictBox.addItem("Московский");
+                DistrictBox.addItem("Пролетарский");
+                DistrictBox.addItem("Киевский");
 
                 FillPanel.add(DistrictTextLabel);
                 FillPanel.add(DistrictBox);
 
-                FillPanel.add(StreetTextLabel);
-                FillPanel.add(StreetField);
-
-                FillPanel.add(HomeTextLabel);
-                FillPanel.add(HomeField);
-
-                FillPanel.add(FleatTextLabel);
-                FillPanel.add(FleatField);
+                FillPanel.add(AdressTextLabel);
+                FillPanel.add(AdressField);
 
                 FillPanel.add(Name1TextLabel);
                 FillPanel.add(Name1Field);
@@ -235,16 +195,36 @@ public class GUI extends JFrame {
                 FillPanel.add(Name5TextLabel);
                 FillPanel.add(Name5Field);
 
-
-               // FillPanel.add(CountryBox);
-                //FillPanel.add(AmountTextLabel);
-
-
                 JPanel AddPanel = new JPanel();
-                JButton AddButton = new JButton("Добавить");
-                AddButton.addActionListener(new ActionListener(){
-                    public void actionPerformed(ActionEvent e){
 
+                JButton AddButton = new JButton("Добавить");
+
+                AddButton.addActionListener(new ActionListener(){
+                    public void actionPerformed(ActionEvent e) {
+
+                        //ArrayList<Fleats> databasefleats1 = new ArrayList<Fleats>();
+
+                        /**try {
+                            databasefleats = Test.read("doc.txt");
+                        } catch (FileNotFoundException e3) {
+                            e3.printStackTrace();
+                        }*/
+
+                        Fleats fleats;
+                        fleats = new Fleats((String) DistrictBox.getSelectedItem(),
+                                AdressField.getText(), Name1Field.getText(),
+                                Name2Field.getText(), Name3Field.getText(),
+                                Name4Field.getText(), Name5Field.getText());
+                        finalDatabasefleats.add(fleats);
+
+                        DefaultTableModel DTM =new DefaultTableModel();
+                        DTM=(DefaultTableModel)table.getModel();
+                        DTM.setRowCount( DTM.getRowCount());
+                        DTM.insertRow(DTM.getRowCount(), new Object[]{(String) DistrictBox.getSelectedItem(),
+                                AdressField.getText(), Name1Field.getText(),
+                                Name2Field.getText(), Name3Field.getText(), Name4Field.getText(),
+                                Name5Field.getText()});
+                        DatabaseFleats.write("doc.txt", finalDatabasefleats1);
 
                     }
                 });
@@ -262,67 +242,44 @@ public class GUI extends JFrame {
         });
 
 
-
-
-
-
-
-        EditMenu.add(EditItem);
-
         EditItem.setText("Редактировать");
+        final ArrayList<Fleats> finalDatabasefleats5 = databasefleats;
         EditItem.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 JFrame EditFrame =  new JFrame();
                 EditFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 EditFrame.setSize(300,300);
                 EditFrame.setLayout(new BorderLayout());
-                JPanel FillPanel = new JPanel(new GridLayout(9,2));
+                JPanel FillPanel = new JPanel(new GridLayout(7,2));
                 JLabel DistrictTextLabel = new JLabel("Район");
-                JLabel StreetTextLabel = new JLabel("Улица");
-                JLabel HomeTextLabel = new JLabel("Дом");
-                JLabel FleatTextLabel = new JLabel("Квартира");
+                JLabel AdressTextLabel = new JLabel("Адресс");
                 JLabel Name1TextLabel = new JLabel("ФИО проживающего");
                 JLabel Name2TextLabel = new JLabel("ФИО проживающего");
                 JLabel Name3TextLabel = new JLabel("ФИО проживающего");
                 JLabel Name4TextLabel = new JLabel("ФИО проживающего");
                 JLabel Name5TextLabel = new JLabel("ФИО проживающего");
 
-
-                //JTextField DistrictField = new JTextField(15);
-                JTextField StreetField = new JTextField(15);
-                JTextField HomeField = new JTextField(15);
-                JTextField FleatField = new JTextField(15);
-                JTextField Name1Field = new JTextField(15);
-                JTextField Name2Field = new JTextField(15);
-                JTextField Name3Field = new JTextField(15);
-                JTextField Name4Field = new JTextField(15);
-                JTextField Name5Field = new JTextField(15);
-                JComboBox DistrictBox = new JComboBox();
+                final JTextField AdressField = new JTextField(20);
+                final JTextField Name1Field = new JTextField(20);
+                final JTextField Name2Field = new JTextField(20);
+                final JTextField Name3Field = new JTextField(20);
+                final JTextField Name4Field = new JTextField(20);
+                final JTextField Name5Field = new JTextField(20);
+                final JComboBox DistrictBox = new JComboBox();
                 DistrictBox.setEditable(true);
 
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-
-
+                DistrictBox.addItem("Ленинский");
+                DistrictBox.addItem("Дзержинский");
+                DistrictBox.addItem("Фрунзенский");
+                DistrictBox.addItem("Московский");
+                DistrictBox.addItem("Пролетарский");
+                DistrictBox.addItem("Киевский");
 
                 FillPanel.add(DistrictTextLabel);
                 FillPanel.add(DistrictBox);
 
-                FillPanel.add(StreetTextLabel);
-                FillPanel.add(StreetField);
-
-                FillPanel.add(HomeTextLabel);
-                FillPanel.add(HomeField);
-
-                FillPanel.add(FleatTextLabel);
-                FillPanel.add(FleatField);
+                FillPanel.add(AdressTextLabel);
+                FillPanel.add(AdressField);
 
                 FillPanel.add(Name1TextLabel);
                 FillPanel.add(Name1Field);
@@ -339,18 +296,36 @@ public class GUI extends JFrame {
                 FillPanel.add(Name5TextLabel);
                 FillPanel.add(Name5Field);
 
-
-                // FillPanel.add(CountryBox);
-                //FillPanel.add(AmountTextLabel);
-
-
                 JPanel EditPanel = new JPanel();
                 JButton AddButton = new JButton("Сохранить");
                 AddButton.addActionListener(new ActionListener(){
                     public void actionPerformed(ActionEvent e){
+                        int selRow = table.getSelectedRow();
+                        if(selRow != -1) {
+                            DefaultTableModel model = (DefaultTableModel)table.getModel();
+                            model.removeRow(selRow);
 
+                            Fleats fleats;
+                            fleats = new Fleats((String) DistrictBox.getSelectedItem(),
+                                    AdressField.getText(), Name1Field.getText(),
+                                    Name2Field.getText(), Name3Field.getText(),
+                                    Name4Field.getText(), Name5Field.getText());
+                            finalDatabasefleats.add(fleats);
 
+                            DefaultTableModel DTM =new DefaultTableModel();
+                            DTM=(DefaultTableModel)table.getModel();
+                            DTM.setRowCount( DTM.getRowCount());
+                            DTM.insertRow(DTM.getRowCount(), new Object[]{(String) DistrictBox.getSelectedItem(),
+                                    AdressField.getText(), Name1Field.getText(),
+                                    Name2Field.getText(), Name3Field.getText(),
+                                    Name4Field.getText(), Name5Field.getText()});
+                            //Test.write("doc.txt", finalDatabasefleats1);
+
+                            finalDatabasefleats5.set(selRow,fleats);
+                            DatabaseFleats.write("doc.txt", finalDatabasefleats5);
+                        }
                     }
+
                 });
 
 
@@ -365,35 +340,32 @@ public class GUI extends JFrame {
             }
         });
 
-
+        EditMenu.add(EditItem);
 
 
 
         DeleteItem.setText("Удалить");
+        final ArrayList<Fleats> finalDatabasefleats2 = databasefleats;
         DeleteItem.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                DefaultTableModel model = (DefaultTableModel) table.getModel();
-                int[] rows = table.getSelectedRows();
-                for(int x = 0; x<table.getSelectedRowCount();x++){
-                    String query1 = "DELETE FROM Preparations " +
-                            "WHERE id_preparation='" + model.getValueAt(rows[x],0) + "' ";
-                    String query2 = "DELETE FROM Storage " +
-                            "WHERE Storage.id_preparation='" + model.getValueAt(rows[x],0) + "' ON Preparations.preparation_name='" + model.getValueAt(rows[x],1) + "' ";
-                    /**try{
-                        dbm.execute(query1);
-                        dbm.execute(query2);
-                    }catch(SQLException ex){
 
-                    }*/
+               // ArrayList<Fleats> databasefleats3 = new ArrayList<Fleats>();
+
+               /** try {
+                    databasefleats3 = Test.read("doc.txt");
+                } catch (FileNotFoundException e3) {
+                    e3.printStackTrace();
+                }*/
+
+                    int selRow = table.getSelectedRow();
+                    if(selRow != -1) {
+                        DefaultTableModel model = (DefaultTableModel)table.getModel();
+                        model.removeRow(selRow);
+                        finalDatabasefleats2.remove(selRow);
+                        DatabaseFleats.write("doc.txt", finalDatabasefleats2);
+                    }
                 }
 
-                int j = 0;
-                for(int x = 0; x<rows.length;x++){
-                    model.removeRow(rows[x]-j);
-                    j++;
-                }
-                table.setModel(model);
-            }
         });
         EditMenu.add(DeleteItem);
 
@@ -408,7 +380,7 @@ public class GUI extends JFrame {
                         .addGroup(layout.createSequentialGroup()
                                 .addComponent(panel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane, DEFAULT_SIZE, 462, Short.MAX_VALUE))
+                                .addComponent(jScrollPane, DEFAULT_SIZE, 500, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(Alignment.LEADING)
@@ -419,259 +391,106 @@ public class GUI extends JFrame {
         pack();
     }
 
-    private void ExitItemActionPerformed(ActionEvent evt) {
-        System.exit(0);
-    }
-
-    public void setStoragePanel(){
-        StorageSearchTextField = new JTextField();
-        StorageSearchTextField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                storageSearch();
-                StorageSearchTextField.setText("");
-            }
-        });
-        StorageSearchButton = new JButton();
-        StorageSearchButton.setText("Search");
-        StorageSearchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                storageSearch();
-                StorageSearchTextField.setText("");
-            }
-        });
-        LoadAmountLabel.setText("Amount to load");
-        LoadAmountTextField = new JTextField();
-        LoadAmountTextField.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
-                load(Integer.parseInt(LoadAmountTextField.getText()), (String)table.getModel().getValueAt(table.getSelectedRow(), 0));
-                LoadAmountTextField.setText("");
-            }
-        });
-        LoadButton.setText("Load");
-        LoadButton.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
-                load(Integer.parseInt(LoadAmountTextField.getText()), (String)table.getModel().getValueAt(table.getSelectedRow(), 0));
-                LoadAmountTextField.setText("");
-            }
-        });
-        //AmountLabel.setText("Amount to sell");
-
-        AmountTextField.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                sell(Integer.parseInt(AmountTextField.getText()), (Integer)table.getModel().getValueAt(table.getSelectedRow(), 0));
-                AmountTextField.setText("");
-            }
-        });
-
-        NameLabel.setText("Name");
-
-        panel.removeAll();
-        GroupLayout panelLayout = new GroupLayout(panel);
-        panel.setLayout(panelLayout);
 
 
+    public void SearchPanel(){
 
-        EditItem.setText("Редактировать");
-        EditItem.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                JFrame EditFrame =  new JFrame();
-                EditFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                EditFrame.setSize(300,300);
-                EditFrame.setLayout(new BorderLayout());
-                JPanel FillPanel = new JPanel(new GridLayout(9,2));
-                JLabel DistrictTextLabel = new JLabel("Район");
-                JLabel StreetTextLabel = new JLabel("Улица");
-                JLabel HomeTextLabel = new JLabel("Дом");
-                JLabel FleatTextLabel = new JLabel("Квартира");
-                JLabel Name1TextLabel = new JLabel("ФИО проживающего");
-                JLabel Name2TextLabel = new JLabel("ФИО проживающего");
-                JLabel Name3TextLabel = new JLabel("ФИО проживающего");
-                JLabel Name4TextLabel = new JLabel("ФИО проживающего");
-                JLabel Name5TextLabel = new JLabel("ФИО проживающего");
+        SearchLabel.setText("Параметры поиска");
 
-
-                //JTextField DistrictField = new JTextField(15);
-                JTextField StreetField = new JTextField(15);
-                JTextField HomeField = new JTextField(15);
-                JTextField FleatField = new JTextField(15);
-                JTextField Name1Field = new JTextField(15);
-                JTextField Name2Field = new JTextField(15);
-                JTextField Name3Field = new JTextField(15);
-                JTextField Name4Field = new JTextField(15);
-                JTextField Name5Field = new JTextField(15);
-                JComboBox DistrictBox = new JComboBox();
-                DistrictBox.setEditable(true);
-
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-                DistrictBox.addItem("123");
-
-
-
-                FillPanel.add(DistrictTextLabel);
-                FillPanel.add(DistrictBox);
-
-                FillPanel.add(StreetTextLabel);
-                FillPanel.add(StreetField);
-
-                FillPanel.add(HomeTextLabel);
-                FillPanel.add(HomeField);
-
-                FillPanel.add(FleatTextLabel);
-                FillPanel.add(FleatField);
-
-                FillPanel.add(Name1TextLabel);
-                FillPanel.add(Name1Field);
-
-                FillPanel.add(Name2TextLabel);
-                FillPanel.add(Name2Field);
-
-                FillPanel.add(Name3TextLabel);
-                FillPanel.add(Name3Field);
-
-                FillPanel.add(Name4TextLabel);
-                FillPanel.add(Name4Field);
-
-                FillPanel.add(Name5TextLabel);
-                FillPanel.add(Name5Field);
-
-
-                // FillPanel.add(CountryBox);
-                //FillPanel.add(AmountTextLabel);
-
-
-                JPanel EditPanel = new JPanel();
-                JButton AddButton = new JButton("Сохранить");
-                AddButton.addActionListener(new ActionListener(){
-                    public void actionPerformed(ActionEvent e){
-
-
-                    }
-                });
-
-
-
-                EditPanel.add(AddButton);
-                EditPanel.add(AddButton);
-                EditFrame.add(FillPanel, BorderLayout.CENTER);
-                EditFrame.add(EditPanel, BorderLayout.SOUTH);
-                EditFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-                EditFrame.setVisible(true);
-
-            }
-        });
-
-
-
-
-
-        panelLayout.setHorizontalGroup(
-
-                panelLayout.createParallelGroup(Alignment.LEADING)
-                        //.addComponent(NameLabel)
-                        .addComponent(StorageSearchButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(StorageSearchTextField, Alignment.TRAILING)
-                        .addComponent(LoadAmountTextField, Alignment.TRAILING)
-                        .addComponent(LoadButton, Alignment.TRAILING, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(panelLayout.createSequentialGroup()
-                                .addGroup(panelLayout.createParallelGroup(Alignment.LEADING)
-                                        .addGroup(panelLayout.createSequentialGroup()
-                                                .addGap(37, 37, 37)
-                                                .addComponent(NameLabel))
-                                        .addGroup(panelLayout.createSequentialGroup()
-                                                .addGap(38, 38, 38)
-                                                .addComponent(LoadAmountLabel)))
-                                .addContainerGap(45, Short.MAX_VALUE))
-                        .addGroup(panelLayout.createSequentialGroup()
-                                .addGap(38, 38, 38)
-                                .addComponent(LoadAmountLabel))
-        );
-        panelLayout.setVerticalGroup(
-                panelLayout.createParallelGroup(Alignment.LEADING)
-                        .addGroup(panelLayout.createSequentialGroup()
-                                .addGap(5, 5, 5)
-                                .addComponent(NameLabel)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(StorageSearchTextField, PREFERRED_SIZE, 27, PREFERRED_SIZE)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(StorageSearchButton)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(LoadAmountLabel)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(LoadAmountTextField, PREFERRED_SIZE, 27, PREFERRED_SIZE)
-                                .addGap(4, 4, 4)
-                                .addComponent(LoadButton))
-        );
-        tablestatus = 2;
-    }
-
-    public void setCataloguePanel(){
         SearchComboBox = new JComboBox<String>();
         SearchComboBox.addItem("По ФИО");
-        SearchComboBox.addItem("По району");
         SearchComboBox.addItem("По адресу");
 
-        SearchLabel.setText("Параметры поиска10");
-        SearchLabel.setText("Параметры поиска");
-        SearchTextField =  new JTextField();
-        SearchTextField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                String s = (String) SearchComboBox.getSelectedItem();
-                if (s.equals("По имени")) {
-                    nameSearch();
-
-                } else if (s.equals("by company name")) {
-                    companySearch();
-
-                } else if (s.equals("by country name")) {
-                    countrySearch();
-
-                } else if (s.equals("by ID")) {
-                    IDSearch();
-
-                }
-                SearchTextField.setText("");
-            }
-        });
-
+        SearchField =  new JTextField();
         SearchButton = new JButton();
         SearchButton.setText("Найти");
 
+        final ArrayList<Fleats> finalDatabasefleats = databasefleats;
 
-        //AmountLabel.setText("Amount");
-
-        AmountTextField.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                sell(Integer.parseInt(AmountTextField.getText()), (Integer)table.getModel().getValueAt(table.getSelectedRow(), 0));
-                AmountTextField.setText("");
-            }
-        });
-        SellButton.setText("Найти");
-        SellButton.addActionListener(new ActionListener() {
+        SearchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                sell(Integer.parseInt(AmountTextField.getText()), (Integer) table.getModel().getValueAt(table.getSelectedRow(), 0));
-                AmountTextField.setText("");
+                switch((String)SearchComboBox.getSelectedItem()){
+                    case "По ФИО":{
+
+                        //ArrayList<Fleats> databasefleats1 = new ArrayList<Fleats>();
+
+                      /**  try {
+                            databasefleats=Test.read("doc.txt");
+                        } catch (FileNotFoundException e3) {
+                            e3.printStackTrace();
+                        }*/
+
+                        for (int i = 0; i < table.getRowCount(); i++) {
+                           // System.out.println(table.getValueAt(i, 1).toString());
+                           // System.out.println(SearchTextField.getText().toString());
+                            if ((table.getValueAt(i,2).toString()).equals( SearchField.getText().toString())||
+                                    (table.getValueAt(i,3).toString()).equals( SearchField.getText().toString())||
+                                    (table.getValueAt(i,4).toString()).equals( SearchField.getText().toString())||
+                                    (table.getValueAt(i,5).toString()).equals( SearchField.getText().toString())||
+                                    (table.getValueAt(i,6).toString()).equals( SearchField.getText().toString())) {
+                                try {
+                                    DefaultTableModel DTM = new DefaultTableModel();
+                                    DTM = (DefaultTableModel) table.getModel();
+                                    DTM.moveRow(0, i - 1, 1);
+                                } catch
+                                        (Exception e2) {
+                                }
+                                Fleats  fleat = databasefleats.get(0);
+                                databasefleats.set(0, databasefleats.get(i));
+                                databasefleats.set(0, fleat);
+                                DatabaseFleats.write("doc.txt", databasefleats );
+
+                            }
+                        }
+                        // nameSearch();
+                        break;
+
+                    }
+                    case "По адресу":{
+
+                       // ArrayList<Fleats> databasefleats = new ArrayList<Fleats>();
+
+                       /** try {
+                            databasefleats=Test.read("doc.txt");
+                        } catch (FileNotFoundException e3) {
+                            e3.printStackTrace();
+                        }*/
+
+                        for (int i = 0; i < table.getRowCount(); i++) {
+                            //System.out.println(table.getValueAt(i, 1).toString());
+                           // System.out.println(SearchTextField.getText().toString());
+                            if ((table.getValueAt(i,1).toString()).equals( SearchField.getText().toString())) {
+                                try {
+                                    DefaultTableModel DTM = new DefaultTableModel();
+                                    DTM = (DefaultTableModel) table.getModel();
+                                    DTM.moveRow(0, i - 1, 1);
+                                } catch
+                                        (Exception e2) {
+                                }
+                                Fleats  fleat = databasefleats.get(0);
+                                databasefleats.set(0, databasefleats.get(i));
+                                databasefleats.set(0, fleat);
+                                DatabaseFleats.write("doc.txt", databasefleats );
+
+                            }}
+                                // nameSearch();
+                                break;
+                        //Test.write("doc.txt", databasefleats );
+                    }
+                }
+                SearchField.setText("");
             }
         });
+
+
         panel.removeAll();
         GroupLayout panelLayout = new GroupLayout(panel);
         panel.setLayout(panelLayout);
-
-
-
-
-
 
         panelLayout.setHorizontalGroup(
                 panelLayout.createParallelGroup(Alignment.LEADING)
                         .addGap(30, 30, 30)
-                        .addComponent(SearchTextField, Alignment.TRAILING)
+                        .addComponent(SearchField, Alignment.TRAILING)
                         .addGroup(panelLayout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGap(30, 30, 30)
@@ -679,18 +498,11 @@ public class GUI extends JFrame {
                                 .addContainerGap()
                                 .addContainerGap(37, Short.MAX_VALUE))
                         .addComponent(SearchComboBox, Alignment.TRAILING, 0, DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(SearchTextField, Alignment.TRAILING)
-                                //.addComponent(SearchLabel)
-                                //addContainerGap(37, Short.MAX_VALUE))
-                                // .addComponent(AmountTextField, GroupLayout.Alignment.TRAILING)
-                                //.addComponent(AmountTextField, Alignment.TRAILING)
+                        .addComponent(SearchField, Alignment.TRAILING)
                         .addComponent(SearchButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(panelLayout.createSequentialGroup()
                                 .addGap(30, 30, 30)
-                                        // .addComponent(SearchLabel)
                                 .addContainerGap(30, Short.MAX_VALUE))
-
-
         );
 
         panelLayout.setVerticalGroup(
@@ -706,86 +518,93 @@ public class GUI extends JFrame {
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(SearchLabel)
                                         .addContainerGap()
-                                        .addComponent(SearchTextField, PREFERRED_SIZE, 30, PREFERRED_SIZE)
+                                        .addComponent(SearchField, PREFERRED_SIZE, 30, PREFERRED_SIZE)
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                //.addComponent()
-                                                //.addComponent(SearchLabel)
-                                                // .addComponent(AmountTextField, PREFERRED_SIZE, 27, PREFERRED_SIZE)
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 200, Short.MAX_VALUE)
-                                                //.addComponent(SearchLabel)
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                // .addComponent(AmountTextField, PREFERRED_SIZE, 30, PREFERRED_SIZE)
                                         .addGap(30, 30, 30)
-                                        .addComponent(SearchButton, PREFERRED_SIZE, 30, PREFERRED_SIZE)
+                                        .addComponent(SearchButton)
                         )
         );
-        tablestatus = 1;
     }
 
-    public void load(int Amount,String name){
 
+    public void adresSearch() {
+        ArrayList<Fleats> databasefleats = new ArrayList<Fleats>();
+
+        try {
+            databasefleats=DatabaseFleats.read("doc.txt");
+        } catch (FileNotFoundException e3) {
+            e3.printStackTrace();
+        }
+
+        for (int i = 0; i < table.getRowCount(); i++) {
+            System.out.println(table.getValueAt(i, 1).toString());
+            System.out.println(SearchField.getText().toString());
+            if ((table.getValueAt(i,1).toString()).equals( SearchField.getText().toString())) {
+                try {
+                    DefaultTableModel DTM = new DefaultTableModel();
+                    DTM = (DefaultTableModel) table.getModel();
+                    DTM.moveRow(0, i - 1, 1);
+                } catch
+                        (Exception e2) {
+                }
+                Fleats  fleat = databasefleats.get(0);
+                databasefleats.set(0, databasefleats.get(i));
+                databasefleats.set(0, fleat);
+                DatabaseFleats.write("doc.txt", databasefleats );
+
+            }
+        }
+    }
+    public void nameSearch() {
+
+        ArrayList<Fleats> databasefleats = new ArrayList<Fleats>();
+
+        try {
+            databasefleats = DatabaseFleats.read("doc.txt");
+        } catch (FileNotFoundException e3) {
+            e3.printStackTrace();
+        }
+
+        for (int i = 0; i < table.getRowCount(); i++) {
+            System.out.println(table.getValueAt(i, 1).toString());
+            System.out.println(SearchField.getText().toString());
+            if ((table.getValueAt(i, 2).toString()).equals(SearchField.getText().toString()) ||
+                    (table.getValueAt(i, 3).toString()).equals(SearchField.getText().toString()) ||
+                    (table.getValueAt(i, 4).toString()).equals(SearchField.getText().toString()) ||
+                    (table.getValueAt(i, 5).toString()).equals(SearchField.getText().toString()) ||
+                    (table.getValueAt(i, 6).toString()).equals(SearchField.getText().toString())) {
+                try {
+                    DefaultTableModel DTM = new DefaultTableModel();
+                    DTM = (DefaultTableModel) table.getModel();
+                    DTM.moveRow(0, i - 1, 1);
+                } catch
+                        (Exception e2) {
+                }
+                Fleats fleat = databasefleats.get(0);
+                databasefleats.set(0, databasefleats.get(i));
+                databasefleats.set(0, fleat);
+                DatabaseFleats.write("doc.txt", databasefleats);
+
+            }
+        }
     }
 
-    public void sell(int Amount,int id){
 
-    }
-
-    public void storageSearch(){
-
-    }
-
-    public void companySearch(){
-
-    }
-
-    public void countrySearch(){
-
-    }
-
-    public void nameSearch(){
-
-    }
-
-    public void IDSearch(){
-
+    private void ExitItemActionPerformed(ActionEvent evt) {
+        System.exit(0);
     }
 
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
-        /**try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(PharmacyFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(PharmacyFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(PharmacyFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(PharmacyFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }*/
-        //</editor-fold>
-        DatabaseFleats DatabaseFleats= new DatabaseFleats();
-        Fleats[]  databasefleats;
-        Fleats fleats =new Fleats("12345678901234567890", "12345678901234567890",1, 145,"12345678901234567890","12345678901234567890","12345678901234567890","12345678901234567890","12345678901234567890");
-       // Fleats[0] = fleats;//={"12345678901234567890", "12345678901234567890", 1, 145, "12345678901234567890", "12345678901234567890", "12345678901234567890", "12345678901234567890", "12345678901234567890"};
-        //Fleats leats =new Fleats("12345678901234567890", "12345678901234567890",1, 145,"12345678901234567890","12345678901234567890","12345678901234567890","12345678901234567890","12345678901234567890");
-       // Fleats.Writeinfile(leats);
+
+
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new GUI().setVisible(true);
             }
         });
+
     }
-
-
-
 }
+
